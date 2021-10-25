@@ -113,7 +113,7 @@ public:
 		glUseProgram(ID);
 	}
 
-	// Полезные uniform-функции
+	// uniform function
 	// ------------------------------------------------------------------------
 	void setBool(const std::string& name, bool value) const
 	{
@@ -173,7 +173,7 @@ public:
 	}
 
 private:
-	// Полезные функции для проверки ошибок компиляции/связывания шейдеров
+	// error cheking 
 	void checkCompileErrors(GLuint shader, std::string type)
 	{
 		GLint success;

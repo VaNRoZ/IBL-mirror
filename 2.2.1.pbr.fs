@@ -4,7 +4,7 @@ in vec2 TexCoords;
 in vec3 WorldPos;
 in vec3 Normal;
 
-// Параметры материала
+// Material parameters
 uniform vec3 albedo;
 uniform float metallic;
 uniform float roughness;
@@ -15,7 +15,7 @@ uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
-// Освещение
+// Lighting
 uniform vec3 lightPositions[4];
 uniform vec3 lightColors[4];
 
@@ -74,23 +74,22 @@ void main()
     vec3 V = normalize(camPos - WorldPos);
     vec3 R = reflect(-V, N); 
 
-    // Вычисляем коэффициент отражения при перпендикулярном угле падения; в случае диэлектрика (например, пластик) - берем значение F0 равным 0.04,
-	// а если металл, то используем цвет альбедо (принцип металличности)    
+   
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, albedo, metallic);
 
-    // Уравнение отражения
+    // Reflection equation
     vec3 Lo = vec3(0.0);
     for(int i = 0; i < 4; ++i) 
     {
-        // Вычисляем энергетическую яркость каждого источника света
+        // brightness of each light source
         vec3 L = normalize(lightPositions[i] - WorldPos);
         vec3 H = normalize(V + L);
         float distance = length(lightPositions[i] - WorldPos);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
 
-        // BRDF Кука-Торренса 
+        // BRDF 
         float NDF = DistributionGGX(N, H, roughness);   
         float G = GeometrySmith(N, V, L, roughness);    
         vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);        
@@ -99,26 +98,20 @@ void main()
         float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; // 0.001 to prevent divide by zero.
         vec3 specular = nominator / denominator;
         
-         // kS эквивалентно коэффициенту Френеля
+         
         vec3 kS = F;
 		
-        // Чтобы выполнялся закон сохранения энергии, сумма энергий диффузной и отраженной составляющих света не может быть больше 1.0 
-		// (кроме тех случаев, когда сама поверхность имеет возможность излучать свет); 
-		// для выполнения данного соотношения диффузная составляющая (kD) должна равняться значению 1.0 - kS
         vec3 kD = vec3(1.0) - kS;
 		
-        // Умножаем kD на значение "1 - металличность", чтобы только неметаллы имели диффузное освещение, 
-		// или линейную композицию в случае полуметаллического материала (чисто металлические материалы не имеют диффузного освещения)
         kD *= 1.0 - metallic;	                
             
-        // Масштабируем освещенность при помощи NdotL
+        // illumination NdotL
         float NdotL = max(dot(N, L), 0.0);        
 
-        // Добавляем к исходящей энергитической яркости Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL; // обратите внимание, что мы уже умножали BRDF на коэффициент Френеля(kS), поэтому нам не нужно снова умножать на kS
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }   
     
-    // Фоновая составляющая освещения (теперь мы используем IBL)
+    // IBL
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     
     vec3 kS = F;
@@ -128,7 +121,7 @@ void main()
     vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
     
-    // Производим выборки из префильтрованной карты LUT-текстуры BRDF и затем объединяем их вместе в соответствии с аппроксимацией разделенной суммы, чтобы получить зеркальную часть IBL
+    // LUT-textures BRDF association with IBL
     const float MAX_REFLECTION_LOD = 4.0;
     vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
     vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
@@ -138,10 +131,10 @@ void main()
     
     vec3 color = ambient + Lo;
 
-    // Тональная компрессия HDR
+    // compression HDR
     color = color / (color + vec3(1.0));
     
-	// Гамма-коррекция
+	//gamma correction
     color = pow(color, vec3(1.0/2.2)); 
 
     FragColor = vec4(color , 1.0);

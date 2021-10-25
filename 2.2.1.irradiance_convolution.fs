@@ -12,7 +12,7 @@ void main()
 
     vec3 irradiance = vec3(0.0);   
     
-    // –асчет касательного пространства от начальной точки
+    // Calculation of the tangent space from the starting point
     vec3 up = vec3(0.0, 1.0, 0.0);
     vec3 right = cross(up, N);
     up = cross(N, right);
@@ -23,10 +23,10 @@ void main()
     {
         for(float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
         {
-            // ѕереход от сферических координат к декартовым (в касательном пространстве)
+            // coordinates transmition
             vec3 tangentSample = vec3(sin(theta) * cos(phi),  sin(theta) * sin(phi), cos(theta));
             
-			// ѕереход от касательного пространства к мировому
+			// vector transmition
             vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N; 
 
             irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
