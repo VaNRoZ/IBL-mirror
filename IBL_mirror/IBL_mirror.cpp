@@ -20,23 +20,23 @@ void renderSphere();
 void renderCube();
 void renderQuad();
 
-// Константы
+// Constructor
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-// Камера
+// Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 bool firstMouse = true;
 
-// Тайминги
+// Timeng
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 int main()
 {
-	// glfw: инициализация и конфигурирование
+	// glfw: initialization & configuration
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -47,7 +47,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-	// glfw: создание окна
+	// glfw: window creation
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL for Ravesli.com!", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	if (window == NULL)
@@ -60,26 +60,26 @@ int main()
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	// Сообщаем GLFW, чтобы он захватил наш курсор
+	// Message GLFW
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// glad: загрузка всех указателей на OpenGL-функции
+	// glad: loading pointers OpenGL-funktion
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
-	// Конфигурирование глобального состояния OpenGL
+	// global conf OpenGL
 	glEnable(GL_DEPTH_TEST);
 
-	// Задаем функцию сравнения глубины типа "меньше или равно" для трюка со скайбоксом
+	// comparisom function
 	glDepthFunc(GL_LEQUAL);
 
-	// Включаем бесшовный сэмплинг кубической карты для нижних мипмап-уровней в предварительно отфильтрованной карте
+	// sampling a cube card
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-	// Компилирование нашей шейдерной программы
+	//  shader programm
 	Shader pbrShader("../2.2.1.pbr.vs", "../2.2.1.pbr.fs");
 	Shader equirectangularToCubemapShader("../2.2.1.cubemap.vs", "../2.2.1.equirectangular_to_cubemap.fs");
 	Shader irradianceShader("../2.2.1.cubemap.vs", "../2.2.1.irradiance_convolution.fs");
@@ -98,7 +98,7 @@ int main()
 	backgroundShader.setInt("environmentMap", 0);
 
 
-	// Освещение
+	// Lightning
 	glm::vec3 lightPositions[] = {
 		glm::vec3(-10.0f,  10.0f, 10.0f),
 		glm::vec3(10.0f,  10.0f, 10.0f),
@@ -115,7 +115,7 @@ int main()
 	int nrColumns = 7;
 	float spacing = 2.5;
 
-	// PBR: настройка фреймбуфера
+	// PBR: setting frame buffer настройка фреймбуфера
 	unsigned int captureFBO;
 	unsigned int captureRBO;
 	glGenFramebuffers(1, &captureFBO);
@@ -126,7 +126,7 @@ int main()
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
 
-	// PBR: загрузка HDR-карты окружения
+	// PBR: loading HDR-card around
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrComponents;
 	float* data = stbi_loadf("../resources/textures/hdr/newport_loft.hdr", &width, &height, &nrComponents, 0);
@@ -135,7 +135,7 @@ int main()
 	{
 		glGenTextures(1, &hdrTexture);
 		glBindTexture(GL_TEXTURE_2D, hdrTexture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data); // обратите внимание, что мы указываем значение данных текстуры как float
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -149,7 +149,7 @@ int main()
 		std::cout << "Failed to load HDR image." << std::endl;
 	}
 
-	// PBR: настройка кубической карты для рендеринга и прикрепления к фреймбуферу
+	// PBR: setting card cube
 	unsigned int envCubemap;
 	glGenTextures(1, &envCubemap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
@@ -160,10 +160,10 @@ int main()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // включаем сэмплирование префильтрованной мипмап-карты (для борьбы с артефактами в виде визуальных точек)
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// PBR: установка матриц проекции и вида для захвата данных по всем 6 направлениям граней кубической карты
+	// PBR: projection matrix
 	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 	glm::mat4 captureViews[] =
 	{
@@ -175,14 +175,14 @@ int main()
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
 
-	// PBR: конвертирование равнопромежуточной HDR-карты окружения в кубическую
+	// PBR:  HDR-cars around
 	equirectangularToCubemapShader.use();
 	equirectangularToCubemapShader.setInt("equirectangularMap", 0);
 	equirectangularToCubemapShader.setMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-	glViewport(0, 0, 512, 512); // не забудьте настроить видовой экран в соответствии с размерами захвата
+	glViewport(0, 0, 512, 512); 
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -194,11 +194,11 @@ int main()
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// Далее позволим OpenGL сгенерировать мипмап-карты (для борьбы с артефактами в виде визуальных точек)
+	// OpenGL mipmapping 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-	// PBR: создаем кубическую карту облученности, и приводим размеры захвата FBO к размерам карты облученности
+	// PBR: create cube card FBO
 	unsigned int irradianceMap;
 	glGenTextures(1, &irradianceMap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
@@ -216,14 +216,14 @@ int main()
 	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
 
-	// PBR: решаем диффузный интеграл, применяя операцию свертки для создания кубической карты облученности
+	// PBR
 	irradianceShader.use();
 	irradianceShader.setInt("environmentMap", 0);
 	irradianceShader.setMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
-	glViewport(0, 0, 32, 32); // не забудьте настроить видовой экран на размеры захвата
+	glViewport(0, 0, 32, 32); 
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -235,7 +235,7 @@ int main()
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// PBR: создаем префильтрованную кубическую карту, и приводим размеры захвата FBO к размерам префильтрованной карты
+	// PBR: create cube card FBO
 	unsigned int prefilterMap;
 	glGenTextures(1, &prefilterMap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
@@ -246,13 +246,13 @@ int main()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // убеждаемся, что фильтр уменьшения задан как mip_linear 
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// Генерируем мипмап-карты для кубической карты, OpenGL автоматически выделит нужное количество памяти
+	// generate mipmapping card OpenGL
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-	// PBR: применяем симуляцию квази Монте-Карло для освещения окружающей среды, чтобы создать префильтрованную (кубическую)карту
+	// PBR
 	prefilterShader.use();
 	prefilterShader.setInt("environmentMap", 0);
 	prefilterShader.setMat4("projection", captureProjection);
@@ -263,7 +263,7 @@ int main()
 	unsigned int maxMipLevels = 5;
 	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
 	{
-		// Изменяем размеры фреймбуфера в соответствии с размерами мипмап-карты
+		// cange size framebuffer
 		unsigned int mipWidth = 128 * std::pow(0.5, mip);
 		unsigned int mipHeight = 128 * std::pow(0.5, mip);
 		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
@@ -283,21 +283,21 @@ int main()
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// PBR: генерируем 2D LUT-текстуру при помощи используемых уравнений BRDF
+	// PBR: generate 2D LUT-texture BRDF
 	unsigned int brdfLUTTexture;
 	glGenTextures(1, &brdfLUTTexture);
 
-	// Выделяем необходимое количество памяти для LUT-текстуры
+	// Allocating memory LUT-texture
 	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
 
-	// Убеждаемся, что режим наложения задан как GL_CLAMP_TO_EDGE
+	// GL_CLAMP_TO_EDGE
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// Затем переконфигурируем захват объекта фреймбуфера и рендерим экранный прямоугольник с использованием BRDF-шейдера
+	// BRDF-shader
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
@@ -311,40 +311,40 @@ int main()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-	// Перед рендерингом инициализируем статические шейдерные uniform-переменные
+	// initialase static shader uniform
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 	pbrShader.use();
 	pbrShader.setMat4("projection", projection);
 	backgroundShader.use();
 	backgroundShader.setMat4("projection", projection);
 
-	// Далее, перед рендерингом, конфигурируем видовой экран в соответствии с исходными размерами экрана фреймбуфера
+	// framebuffer
 	int scrWidth, scrHeight;
 	glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
 	glViewport(0, 0, scrWidth, scrHeight);
 
-	// Цикл рендеринга
+	// render cycle
 	while (!glfwWindowShouldClose(window))
 	{
-		// Логическая часть работы со временем для каждого кадра
+		// logic part for time 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Обработка ввода
+		// input processing
 		processInput(window);
 
-		// Рендер
+		// render
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Рендеринг сцены, передавая свертку карты облученности в завершающий шейдер
+		// scen render
 		pbrShader.use();
 		glm::mat4 view = camera.GetViewMatrix();
 		pbrShader.setMat4("view", view);
 		pbrShader.setVec3("camPos", camera.Position);
 
-		// Связываем предварительно вычисленные IBL-данные
+		// IBL-data
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 		glActiveTexture(GL_TEXTURE1);
@@ -358,8 +358,8 @@ int main()
 			pbrShader.setFloat("metallic", (float)row / (float)nrRows);
 			for (int col = 0; col < nrColumns; ++col)
 			{
-				// Мы сужаем множество значений параметра шероховатости до интервала 0.025 - 1.0, 
-				// т.к. идеально гладкие поверхности (шероховатость = 0.0) при прямом освещении имеют тенденцию выглядеть немного иначе
+				// Roughness 0.025 - 1.0,  perfectly smooth surfaces (Roughness = 0.0)
+				 
 				pbrShader.setFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
 
 				model = glm::mat4(1.0f);
@@ -374,8 +374,8 @@ int main()
 		}
 
 
-		// Рендерим источник света (просто ререндерим сферу на месте источника света).
-		// Это выглядит немного не так, поскольку мы используем один и тот же шейдер 
+		// Rendering the light source
+		
 		for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
 		{
 			glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
@@ -390,32 +390,32 @@ int main()
 			renderSphere();
 		}
 
-		// Рендеринг скайбокса
+		// Sky box render
 		backgroundShader.use();
 		backgroundShader.setMat4("view", view);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-		// glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap); // отображаем карту облученности
-		// glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap); // отображаем карту префильтра
+		// glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap); 
+		// glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap); 
 		renderCube();
 
 
-		// Рендер BRDF-карты
+		// render BRDF-card
 		// brdfShader.Use();
 		// renderQuad();
 
 
-		// glfw: обмен содержимым front- и back- буферов. Отслеживание событий ввода/вывода (была ли нажата/отпущена кнопка, перемещен курсор мыши и т.п.)
+		// glfw: sharing front- & back- buffer. buttn moutse movenent
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	// glfw: завершение, освобождение всех ранее задействованных GLFW-ресурсов
+	// glfw term
 	glfwTerminate();
 	return 0;
 }
 
-// Обработка всех событий ввода: запрос GLFW о нажатии/отпускании кнопки мыши в данном кадре и соответствующая обработка данных событий
+// input output events: GLFW 
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -431,16 +431,14 @@ void processInput(GLFWwindow* window)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-// glfw: всякий раз, когда изменяются размеры окна (пользователем или операционной системой), вызывается данная callback-функция
+// glfw: callback-function when window size change
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	// Убеждаемся, что окно просмотра соответствует новым размерам окна.
-	// Обратите внимание, ширина и высота будут значительно больше, чем указано, на Retina-дисплеях
-	glViewport(0, 0, width, height);
+		glViewport(0, 0, width, height);
 }
 
 
-// glfw: всякий раз, когда перемещается мышь, вызывается данная callback-функция
+// glfw: callback function
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
@@ -451,7 +449,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 
 	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos; // перевернуто, так как y-координаты идут снизу вверх
+	float yoffset = lastY - ypos; 
 
 	lastX = xpos;
 	lastY = ypos;
@@ -459,13 +457,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: всякий раз, когда прокручивается колесико мыши, вызывается данная callback-функция
+// glfw: callback function
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
 }
 
-// Рендерим (и строим при первом же вызове) сферу
+// render spher
 unsigned int sphereVAO = 0;
 unsigned int indexCount;
 void renderSphere()
@@ -505,7 +503,7 @@ void renderSphere()
 		bool oddRow = false;
 		for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
 		{
-			if (!oddRow) // четные строки: y == 0, y == 2; и так далее
+			if (!oddRow)
 			{
 				for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
 				{
@@ -561,71 +559,71 @@ void renderSphere()
 	glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
 }
 
-// renderCube() рендерит 1x1 3D-ящик в NDC
+// renderCube() 1x1 3D-box in NDC
 unsigned int cubeVAO = 0;
 unsigned int cubeVBO = 0;
 void renderCube()
 {
-	// Инициализация (если необходимо)
+	// initialisartion 
 	if (cubeVAO == 0)
 	{
 		float vertices[] = {
-			// задняя грань
-		   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // нижняя-левая
-			1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // верхняя-правая
-			1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // нижняя-правая         
-			1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // верхняя-правая
-		   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // нижняя-левая
-		   -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // верхняя-левая
+			// back edge
+		   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // lower left
+			1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top righe
+			1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // lower righ t        
+			1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top righe
+		   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // lower left
+		   -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top left
 
-			// передняя грань
-		   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // нижняя-левая
-			1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // нижняя-правая
-			1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // верхняя-правая
-			1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // верхняя-правая
-		   -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // верхняя-левая
-		   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // нижняя-левая
+			// leading edge
+		   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // lower left
+			1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // lower right
+			1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top right
+			1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // tpt right
+		   -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top left
+		   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // lower left
 
-			// грань слева
-		   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // верхняя-правая
-		   -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // верхняя-левая
-		   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // нижняя-левая
-		   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // нижняя-левая
-		   -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // нижняя-правая
-		   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // верхняя-правая
+			// left edge
+		   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top right
+		   -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top left
+		   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // lower left
+		   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // lower left
+		   -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // lower right
+		   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top ringt
 
-			// грань справа
-			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // верхняя-левая
-			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // нижняя-правая
-			1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // верхняя-правая         
-			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // нижняя-правая
-			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // верхняя-левая
-			1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // нижняя-левая     
+			// right edge
+			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top left
+			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // lower right
+			1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top right         
+			1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // lower right
+			1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top left
+			1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // lower left     
 
-			// нижняя грань
-		   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // верхняя-правая
-			1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // верхняя-левая
-			1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // нижняя-левая
-			1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // нижняя-левая
-		   -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // нижняя-правая
-		   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // верхняя-правая
+			// lower edge
+		   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top right
+			1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top left
+			1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // lower left
+			1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // lower left
+		   -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // lower right
+		   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top right
 
-			// верхняя грань
-		   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // верхняя-левая
-			1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // нижняя-правая
-			1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // верхняя-правая     
-			1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // нижняя-правая
-		   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // верхняя-левая
-		   -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // нижняя-левая        
+			// top edge
+		   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top left
+			1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // lower right
+			1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top right     
+			1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // lower right
+		   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top left
+		   -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // lower left        
 		};
 		glGenVertexArrays(1, &cubeVAO);
 		glGenBuffers(1, &cubeVBO);
 
-		// Заполняем буфер
+		// fill in buffer
 		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-		// Связываем вершинные атрибуты
+		// ilnking vertex attributes
 		glBindVertexArray(cubeVAO);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -637,13 +635,13 @@ void renderCube()
 		glBindVertexArray(0);
 	}
 
-	// Рендер куба
+	// cube render
 	glBindVertexArray(cubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 }
 
-// renderQuad() рендерит 1x1 XY-прямоугольник NDC
+// renderQuad() 1x1 XY-rectangle NDC
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
 void renderQuad()
@@ -651,14 +649,14 @@ void renderQuad()
 	if (quadVAO == 0)
 	{
 		float quadVertices[] = {
-			// координаты      // текстурные координаты
+			// coordinats      // texture coordinate
 		   -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
 		   -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
 			1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 		};
 
-		// Устанавливаем VAO плоскости
+		// VAO plane
 		glGenVertexArrays(1, &quadVAO);
 		glGenBuffers(1, &quadVBO);
 		glBindVertexArray(quadVAO);

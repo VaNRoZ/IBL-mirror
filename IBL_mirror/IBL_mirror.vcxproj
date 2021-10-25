@@ -157,13 +157,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="E:\OpenGL\glad.c" />
     <ClCompile Include="IBL_mirror.cpp" />
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera_h.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="E:\OpenGL\stb-master\stb-master\stb_image.h" />
     <ClInclude Include="mesh_h.h" />
-    <ClInclude Include="model_h.h" />
+    <ClInclude Include="model.h" />
+    <ClInclude Include="shader.h" />
     <ClInclude Include="shader_m.h" />
   </ItemGroup>
   <ItemGroup>

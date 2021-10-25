@@ -14,10 +14,10 @@ class Shader
 public:
 	unsigned int ID;
 
-	// Constructor generates shader on the fly
+	// shader constructor
 	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
 	{
-		// 1. Getting the ver/frg shader source code
+		// 1. vertex/fragment shader 
 		std::string vertexCode;
 		std::string fragmentCode;
 		std::string geometryCode;
@@ -25,30 +25,29 @@ public:
 		std::ifstream fShaderFile;
 		std::ifstream gShaderFile;
 
-		//Ifstream exception:
+		// ifstream objects:
 		vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		try
 		{
-			// Open file
+			// file open
 			vShaderFile.open(vertexPath);
 			fShaderFile.open(fragmentPath);
 			std::stringstream vShaderStream, fShaderStream;
 
-			// Read file in buff
+			// reading file
 			vShaderStream << vShaderFile.rdbuf();
 			fShaderStream << fShaderFile.rdbuf();
 
-			// close file
+			// closing file
 			vShaderFile.close();
 			fShaderFile.close();
 
-			// convertiong in string
+			// convertin in string
 			vertexCode = vShaderStream.str();
 			fragmentCode = fShaderStream.str();
 
-			// geometric shader
 			if (geometryPath != nullptr)
 			{
 				gShaderFile.open(geometryPath);
@@ -65,22 +64,21 @@ public:
 		const char* vShaderCode = vertexCode.c_str();
 		const char* fShaderCode = fragmentCode.c_str();
 
-		// 2. compile shader
+		// 2. Shader compiling
 		unsigned int vertex, fragment;
 
-		// Vertex Shader
+		// vertex shader
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vShaderCode, NULL);
 		glCompileShader(vertex);
 		checkCompileErrors(vertex, "VERTEX");
 
-		// part shader
+		// fragment shader 
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fShaderCode, NULL);
 		glCompileShader(fragment);
 		checkCompileErrors(fragment, "FRAGMENT");
 
-		// geometric shader to compiler
 		unsigned int geometry;
 		if (geometryPath != nullptr)
 		{
@@ -91,7 +89,7 @@ public:
 			checkCompileErrors(geometry, "GEOMETRY");
 		}
 
-		// Shader programm
+		// shader's programm 
 		ID = glCreateProgram();
 		glAttachShader(ID, vertex);
 		glAttachShader(ID, fragment);
@@ -107,7 +105,7 @@ public:
 			glDeleteShader(geometry);
 	}
 
-	// activarion shader
+	// shader actiocation
 	void use() const
 	{
 		glUseProgram(ID);
@@ -173,7 +171,7 @@ public:
 	}
 
 private:
-	// Полезные функции для проверки ошибок компиляции/связывания шейдеров
+	// error cheking
 	void checkCompileErrors(GLuint shader, std::string type)
 	{
 		GLint success;
