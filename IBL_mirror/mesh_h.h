@@ -14,19 +14,19 @@ using namespace std;
 
 struct Vertex {
 
-	// Позиция
+	// position
 	glm::vec3 Position;
 
-	// Нормаль
+	// notmal
 	glm::vec3 Normal;
 
-	// Текстурные координаты
+	// textur coordinats
 	glm::vec2 TexCoords;
 
-	// Касательный вектор
+	// Tangent vector
 	glm::vec3 Tangent;
 
-	// Вектор бинормали (вектор, перпендикулярный касательному вектору и вектору нормали)
+	// binormal vector
 	glm::vec3 Bitangent;
 };
 
@@ -38,105 +38,103 @@ struct Texture {
 
 class Mesh {
 public:
-	// Данные меша
+	// mesh data
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
 	unsigned int VAO;
 
-	// Конструктор
+	// constructor
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
 	{
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
 
-		// Теперь, когда у нас есть все необходимые данные, устанавливаем вершинные буферы и указатели атрибутов
+		// vertex buffet
 		setupMesh();
 	}
 
-	// Рендеринг меша
+	// mesh render
 	void Draw(Shader& shader)
 	{
-		// Связываем соответствующие текстуры
+		// linking textures
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
 		unsigned int normalNr = 1;
 		unsigned int heightNr = 1;
 		for (unsigned int i = 0; i < textures.size(); i++)
 		{
-			glActiveTexture(GL_TEXTURE0 + i); // перед связыванием активируем нужный текстурный юнит
+			glActiveTexture(GL_TEXTURE0 + i);
 
-			// Получаем номер текстуры (номер N в diffuse_textureN)
+			// Get the texture number 
 			string number;
 			string name = textures[i].type;
 			if (name == "texture_diffuse")
 				number = std::to_string(diffuseNr++);
 			else if (name == "texture_specular")
-				number = std::to_string(specularNr++); // конвертируем unsigned int в строку
+				number = std::to_string(specularNr++); // convert unsigned int in string
 			else if (name == "texture_normal")
-				number = std::to_string(normalNr++); // конвертируем unsigned int в строку
+				number = std::to_string(normalNr++); // convert unsigned int in string
 			else if (name == "texture_height")
-				number = std::to_string(heightNr++); // конвертируем unsigned int в строку
+				number = std::to_string(heightNr++); // convert unsigned int in string
 
-			// Теперь устанавливаем сэмплер на нужный текстурный юнит
+			// sempler on texture unit
 			glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
-			// и связываем текстуру
+			// linking textures
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 
-		// Отрисовываем меш
+		// mash painting
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
-		// Считается хорошей практикой возвращать значения переменных к их первоначальным значениям
 		glActiveTexture(GL_TEXTURE0);
 	}
 
 private:
-	// Данные для рендеринга 
+	// Data for rendering 
 	unsigned int VBO, EBO;
 
 	// Инициализируем все буферные объекты/массивы
 	void setupMesh()
 	{
-		// Создаем буферные объекты/массивы
+		// Initialize all buffer objects/arrays
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
 		glGenBuffers(1, &EBO);
 
 		glBindVertexArray(VAO);
 
-		// Загружаем данные в вершинный буфер
+		// Load data into the vertex buffer
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-		// Самое замечательное в структурах то, что расположение в памяти их внутренних переменных является последовательным.
-		// Смысл данного трюка в том, что мы можем просто передать указатель на структуру, и она прекрасно преобразуется в массив данных с элементами типа glm::vec3 (или glm::vec2), который затем будет преобразован в массив данных float, ну а в конце – в байтовый массив
+		
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-		// Устанавливаем указатели вершинных атрибутов
+		// pointers on vertex atteibute
 
-		// Координаты вершин
+		// vertex coordinat
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
 
-		// Нормали вершин
+		// vertex normal
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 
-		// Текстурные координаты вершин
+		// texture vertex coordinats
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
-		// Касательный вектор вершины
+		// tangent vector of the vertex
 		glEnableVertexAttribArray(3);
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
 
-		// Вектор бинормали вершины
+		// Binormal vertex vector
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 
