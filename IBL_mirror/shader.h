@@ -111,7 +111,7 @@ public:
 		glUseProgram(ID);
 	}
 
-	// Полезные uniform-функции
+	// uniform function
 	// ------------------------------------------------------------------------
 	void setBool(const std::string& name, bool value) const
 	{
